@@ -30,13 +30,45 @@ class Program
             {
                 // Wait for an incoming request
                 var context = await listener.GetContextAsync();
+                ServeStaticFile(context);
                 // Process the request
-                await ProcessRequestAsync(context);
+                //await ProcessRequestAsync(context);
             }
         }
         catch (HttpListenerException) when (cancellationToken.IsCancellationRequested)
         {
             // Ignore HttpListenerException when cancellation is requested
+        }
+    }
+
+    static void ServeStaticFile(HttpListenerContext context)
+    {
+        var filePath = Path.Combine(Directory.GetCurrentDirectory(),"wwwroot" + context.Request.Url.LocalPath);
+        if (filePath.EndsWith("wwwroot/"))
+        {
+            filePath = Path.Combine(Directory.GetCurrentDirectory(),"wwwroot/index.html");
+        }
+        if (File.Exists(filePath))
+        {
+            byte[] fileBytes = File.ReadAllBytes(filePath);
+            var filetype = Path.GetExtension(filePath).ToLower();
+            string contentType = "application/octet-stream";
+            if (filetype == ".html")
+            {
+                contentType = "text/html";
+            } else if (filetype == ".css")
+            {
+                contentType = "text/css";
+            } else if (filetype == ".js")
+            {
+                contentType = "application/javascript";
+            }
+        
+            // Send the response
+            context.Response.ContentType = contentType;
+            context.Response.ContentLength64 = fileBytes.Length;
+            context.Response.OutputStream.Write(fileBytes);
+            context.Response.Close();
         }
     }
     static async Task ProcessRequestAsync(HttpListenerContext context)
