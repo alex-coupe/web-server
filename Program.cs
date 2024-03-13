@@ -4,6 +4,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using WebServer;
 class Program
 {
     static async Task Main(string[] args)
@@ -30,56 +31,15 @@ class Program
             {
                 // Wait for an incoming request
                 var context = await listener.GetContextAsync();
-                ServeStaticFile(context);
-                // Process the request
-                //await ProcessRequestAsync(context);
+                ResponseWriter.Write(context);
             }
         }
-        catch (HttpListenerException) when (cancellationToken.IsCancellationRequested)
+        catch (ArgumentNullException)
         {
-            // Ignore HttpListenerException when cancellation is requested
+            //Context is null
         }
-    }
-
-    static void ServeStaticFile(HttpListenerContext context)
-    {
-        var filePath = Path.Combine(Directory.GetCurrentDirectory(),"wwwroot" + context.Request.Url.LocalPath);
-        if (filePath.EndsWith("wwwroot/"))
-        {
-            filePath = Path.Combine(Directory.GetCurrentDirectory(),"wwwroot/index.html");
+        catch (Exception)
+        { 
         }
-        if (File.Exists(filePath))
-        {
-            byte[] fileBytes = File.ReadAllBytes(filePath);
-            var filetype = Path.GetExtension(filePath).ToLower();
-            string contentType = "application/octet-stream";
-            if (filetype == ".html")
-            {
-                contentType = "text/html";
-            } else if (filetype == ".css")
-            {
-                contentType = "text/css";
-            } else if (filetype == ".js")
-            {
-                contentType = "application/javascript";
-            }
-        
-            // Send the response
-            context.Response.ContentType = contentType;
-            context.Response.ContentLength64 = fileBytes.Length;
-            context.Response.OutputStream.Write(fileBytes);
-            context.Response.Close();
-        }
-    }
-    static async Task ProcessRequestAsync(HttpListenerContext context)
-    {
-        // Create a response
-        string responseString = "Hello, World!";
-        byte[] responseBytes = Encoding.UTF8.GetBytes(responseString);
-        // Send the response
-        context.Response.ContentType = "text/plain";
-        context.Response.ContentLength64 = responseBytes.Length;
-        await context.Response.OutputStream.WriteAsync(responseBytes);
-        context.Response.Close();
     }
 }
