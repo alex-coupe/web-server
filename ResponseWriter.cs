@@ -18,6 +18,7 @@ namespace WebServer
 
                 if (File.Exists(filepath))
                 {
+                    Logger.Log($"Serving requested resource - {filepath}");
                     byte[] responseBytes = File.ReadAllBytes(filepath);
                     ctx.Response.StatusCode = (int)HttpStatusCode.OK;
                     ctx.Response.ContentType = DetermineContentType(filepath);
@@ -26,6 +27,7 @@ namespace WebServer
                 }
                 else
                 {
+                    Logger.Log($"Resource not found - {filepath}");
                     var notFound = Path.Combine(Directory.GetCurrentDirectory(), "serverpages/notfound.html");
                     byte[] responseBytes = File.ReadAllBytes(notFound);
                     ctx.Response.ContentType = "text/html";
