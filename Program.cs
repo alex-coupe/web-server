@@ -1,9 +1,6 @@
-﻿using System;
-using System.IO;
-using System.Net;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Net;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using WebServer;
 class Program
 {
@@ -24,13 +21,17 @@ class Program
     /// </summary>
     /// <param name="args"></param>
     /// <returns></returns>
+    
+   
     static async Task Main(string[] args)
     {
-        Logger.Init("./logfile.txt",5,new TimeSpan(0,0,5),300);
+        ConfigManager.Init();
+        Logger.Init("./logfile.txt",ConfigManager.Configuration.LogBatchSize,ConfigManager.Configuration.LogTimeThreshold, ConfigManager.Configuration.LogMaxFileSize);
         Logger.Log("Logger Initialised, booting server");
         // Set up the HTTP listener
         var listener = new HttpListener();
-        listener.Prefixes.Add("http://localhost:8080/");
+        listener.TimeoutManager.RequestQueue = TimeSpan.FromSeconds(ConfigManager.Configuration.Timeout);
+        listener.Prefixes.Add(ConfigManager.Configuration.Listen[0]);
         listener.Start();
         Logger.Log("Server started. Listening for connections...");
         // Set up cancellation token

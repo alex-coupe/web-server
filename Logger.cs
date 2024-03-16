@@ -12,13 +12,14 @@ namespace WebServer
         private static readonly ConcurrentQueue<string> logQueue = new();
         private static string logFilePath = "";
         private static int batchSize;
-        private static TimeSpan timeThreshold;
+        private static int timeThreshold;
         private static int maxFileSize;
         private static readonly CancellationTokenSource cancellationTokenSource = new();
         private static Task loggingTask = Task.CompletedTask;
         private static long currentFileSize;
         private static int roll = 1;
-        public static void Init(string logFilePath, int batchSize, TimeSpan timeThreshold, int maxFileSize)
+        private static DateTime lastLogWrite = DateTime.Now;
+        public static void Init(string logFilePath, int batchSize, int timeThreshold, int maxFileSize)
         {
             Logger.logFilePath = logFilePath;
             Logger.batchSize = batchSize;
@@ -36,8 +37,8 @@ namespace WebServer
             {
                 while (!cancellationTokenSource.Token.IsCancellationRequested)
                 {
-                    await Task.Delay(timeThreshold, cancellationTokenSource.Token);
-                    if (logQueue.Count >= batchSize)
+                    TimeSpan timeDifference = DateTime.Now - lastLogWrite;
+                    if (logQueue.Count >= batchSize || timeDifference.Seconds >= timeThreshold)
                     {
                         await WriteLogsToFile();
                     }

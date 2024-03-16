@@ -1,0 +1,17 @@
+{
+    "listen":["http://localhost:8080/"],
+    "documentRoot":"wwwroot",
+    "keepAlive":true,
+    "timeout":60,
+    "maxConnections":3000,
+    "logBatchSize":30,
+    "logTimeThreshold":30,
+    "logMaxFileSize":500000,
+    "cors":{
+        "allowOptions":true,
+        "allowOrigin":["*"],
+        "allowMethods":["*"],
+        "allowHeaders":["*"],
+        "allowAuth":true
+    }
+}

@@ -44,10 +44,10 @@ namespace WebServer
 
         private static string GetFilePath(HttpListenerContext context)
         {
-            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot" + context.Request?.Url?.LocalPath);
-            if (filePath.EndsWith("wwwroot/"))
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), ConfigManager.Configuration.DocumentRoot + context.Request?.Url?.LocalPath);
+            if (filePath.EndsWith(ConfigManager.Configuration.DocumentRoot+"/"))
             {
-                filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/index.html");
+                filePath = Path.Combine(Directory.GetCurrentDirectory(), ConfigManager.Configuration.DocumentRoot + "/index.html");
             }
             return filePath;
         }
