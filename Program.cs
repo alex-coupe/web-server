@@ -11,9 +11,8 @@ class Program
     /// 3. Dynamix Content Generation
     /// 4. Security
     /// 5. Caching
-    /// 6. Rate Limiting
-    /// 7. Compression
-    /// 8. Content Type Negotiation
+    /// 6. Compression
+    /// 7. Content Type Negotiation
     /// </summary>
     /// <param name="args"></param>
     /// <returns></returns>
@@ -26,7 +25,6 @@ class Program
         Logger.Log("Logger Initialised, booting server");
         // Set up the HTTP listener
         var listener = new HttpListener();
-        
         listener.TimeoutManager.RequestQueue = TimeSpan.FromSeconds(ConfigManager.Configuration.Timeout);
         listener.Prefixes.Add(ConfigManager.Configuration.Listen[0]);
         listener.Start();
@@ -34,6 +32,7 @@ class Program
         // Set up cancellation token
         var cancellationTokenSource = new CancellationTokenSource();
         CancellationToken cancellationToken = cancellationTokenSource.Token;
+        Middleware.Init();
         // Handle incoming requests asynchronously
         await HandleRequestsAsync(listener, cancellationToken);
         // Clean up
@@ -49,8 +48,19 @@ class Program
                 // Wait for an incoming request
                 var context = await listener.GetContextAsync();
                 Logger.Log($"{context.Request.RemoteEndPoint.Address}:{context.Request.RemoteEndPoint.Port} - - [{DateTime.Now}]\"{context.Request.HttpMethod} {context.Request.Url} {context.Request.UserAgent}\"");
+                Middleware.HandleRateLimiting(context);
                 Middleware.HandleCors(context);
-                ResponseWriter.Write(context);
+                try
+                {
+                    if (context.Response.StatusCode == 200)
+                    {
+                        ResponseWriter.Write(context);
+                    }
+                } 
+                catch(Exception ex)
+                {
+                    Logger.Log($"Error processing response {ex.Message} - {ex.StackTrace}");
+                }
             }
             Logger.Log("Server shutting down");
         }
