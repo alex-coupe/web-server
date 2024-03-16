@@ -9,9 +9,9 @@
     "logMaxFileSize":500000,
     "cors":{
         "allowOptions":true,
-        "allowOrigin":["*"],
-        "allowMethods":["*"],
-        "allowHeaders":["*"],
+        "allowOrigin":"*",
+        "allowMethods":"GET, POST, PUT, DELETE, OPTIONS",
+        "allowHeaders":"*",
         "allowAuth":true
     }
 }

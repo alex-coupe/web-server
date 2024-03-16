@@ -32,13 +32,13 @@ namespace WebServer
     public class CORSConfig
     {
         [JsonPropertyName("allowOptions")]
-        public bool? AllowOptions { get; set; }
+        public bool AllowOptions { get; set; }
         [JsonPropertyName("allowOrigin")]
-        public string[]? AllowOrigin { get; set; }
+        public string AllowOrigin { get; set; } = default!;
         [JsonPropertyName("allowMethods")]
-        public string[]? AllowMethods { get; set; }
+        public string AllowMethods { get; set; } = default!;
         [JsonPropertyName("allowHeaders")]
-        public string[]? AllowHeaders { get; set; }
+        public string AllowHeaders { get; set; } = default!;
         [JsonPropertyName("allowAuth")]
         public bool AllowAuth { get; set; }
     }

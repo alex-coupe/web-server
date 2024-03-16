@@ -6,18 +6,14 @@ class Program
 {
     /// <summary>
     /// TODO:
-    /// 1. Error Handling
-    /// 2. Multithreading
-    /// 3. Routing
-    /// 4. Request Validation
-    /// 5. Dynamix Content Generation
-    /// 7. Security
-    /// 8. Caching
-    /// 9. Configuration
-    /// 10. Rate Limiting
-    /// 11. Compression
-    /// 12. Content Type Negotiation
-    /// 13. CORS
+    /// 1. Routing
+    /// 2. Request Validation
+    /// 3. Dynamix Content Generation
+    /// 4. Security
+    /// 5. Caching
+    /// 6. Rate Limiting
+    /// 7. Compression
+    /// 8. Content Type Negotiation
     /// </summary>
     /// <param name="args"></param>
     /// <returns></returns>
@@ -30,6 +26,7 @@ class Program
         Logger.Log("Logger Initialised, booting server");
         // Set up the HTTP listener
         var listener = new HttpListener();
+        
         listener.TimeoutManager.RequestQueue = TimeSpan.FromSeconds(ConfigManager.Configuration.Timeout);
         listener.Prefixes.Add(ConfigManager.Configuration.Listen[0]);
         listener.Start();
@@ -52,6 +49,7 @@ class Program
                 // Wait for an incoming request
                 var context = await listener.GetContextAsync();
                 Logger.Log($"{context.Request.RemoteEndPoint.Address}:{context.Request.RemoteEndPoint.Port} - - [{DateTime.Now}]\"{context.Request.HttpMethod} {context.Request.Url} {context.Request.UserAgent}\"");
+                Middleware.HandleCors(context);
                 ResponseWriter.Write(context);
             }
             Logger.Log("Server shutting down");
