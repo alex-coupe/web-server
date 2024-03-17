@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.Mime;
@@ -10,6 +11,7 @@ namespace WebServer
 {
     public static class ResponseWriter
     {
+        
         public static void Write(HttpListenerContext ctx)
         {
             if (ctx != null)
@@ -20,6 +22,15 @@ namespace WebServer
                 {
                     Logger.Log($"Serving requested resource - {filepath}");
                     byte[] responseBytes = File.ReadAllBytes(filepath);
+                    using (MemoryStream outputStream = new())
+                    {
+                        using (GZipStream gzipStream = new(outputStream, CompressionMode.Compress))
+                        {
+                            gzipStream.Write(responseBytes, 0, responseBytes.Length);
+                        }
+                        responseBytes = outputStream.ToArray();
+                    }
+                    ctx.Response.AddHeader("Content-Encoding", "gzip");
                     ctx.Response.StatusCode = (int)HttpStatusCode.OK;
                     ctx.Response.ContentType = DetermineContentType(filepath);
                     ctx.Response.ContentLength64 = responseBytes.Length;
@@ -30,12 +41,20 @@ namespace WebServer
                     Logger.Log($"Resource not found - {filepath}");
                     var notFound = Path.Combine(Directory.GetCurrentDirectory(), "serverpages/notfound.html");
                     byte[] responseBytes = File.ReadAllBytes(notFound);
+                    using (MemoryStream outputStream = new())
+                    {
+                        using (GZipStream gzipStream = new(outputStream, CompressionMode.Compress))
+                        {
+                            gzipStream.Write(responseBytes, 0, responseBytes.Length);
+                        }
+                        responseBytes = outputStream.ToArray();
+                    }
+                    ctx.Response.AddHeader("Content-Encoding", "gzip");
                     ctx.Response.ContentType = "text/html";
                     ctx.Response.ContentLength64 = responseBytes.Length;
                     ctx.Response.StatusCode = (int)HttpStatusCode.NotFound;
                     ctx.Response.OutputStream.Write(responseBytes);
                 }
-                ctx.Response.ContentEncoding = Encoding.UTF8;
                 ctx.Response.Close();
             }
             else
