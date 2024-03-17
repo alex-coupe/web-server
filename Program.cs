@@ -11,7 +11,6 @@ class Program
     /// 3. Dynamix Content Generation
     /// 4. Security
     /// 5. Caching
-    /// 6. Compression
     /// 7. Content Type Negotiation
     /// </summary>
     /// <param name="args"></param>
