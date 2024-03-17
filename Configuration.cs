@@ -27,6 +27,12 @@ namespace WebServer
         public int LogMaxFileSize { get; set; }
         [JsonPropertyName("cors")]
         public CORSConfig? CORS { get; set; }
+
+        [JsonPropertyName("rateLimit")]
+        public int RateLimit { get; set; }
+
+        [JsonPropertyName("cleanupInterval")]
+        public int CleanupInterval { get; set; }
     }
 
     public class CORSConfig

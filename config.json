@@ -7,6 +7,8 @@
     "logBatchSize":30,
     "logTimeThreshold":30,
     "logMaxFileSize":500000,
+    "rateLimit":50,
+    "cleanupInterval":300,
     "cors":{
         "allowOptions":true,
         "allowOrigin":"*",

@@ -12,27 +12,27 @@ namespace WebServer
     public class Middleware
     {
         private static Dictionary<string, (int, DateTime)> requestTracker = [];
-        private const int RATE_LIMIT = 10; // Max requests per minute
-        private const int CLEANUP_INTERVAL = 300000; // Cleanup interval in milliseconds (5 minutes)
+        private static int RATE_LIMIT = ConfigManager.Configuration.RateLimit;
+        private static int CLEANUP_INTERVAL = ConfigManager.Configuration.CleanupInterval; 
         private static readonly CancellationTokenSource cancellationTokenSource = new();
-        private static Task cleanupTask = Task.CompletedTask;
+       
         public static void Init()
         {
             CleanupTask();
         }
         private static void CleanupTask()
         {
-            cleanupTask = Task.Run(() =>
+            Task.Run(() =>
             {
                 while (!cancellationTokenSource.Token.IsCancellationRequested)
                 {
                     DateTime currentTime = DateTime.UtcNow;
-                    // Remove entries that haven't received requests for more than 5 minutes
+                   
                     var keysToRemove = new List<string>();
                     foreach (var entry in requestTracker)
                     {
                         TimeSpan timeDiff = currentTime - entry.Value.Item2;
-                        if (timeDiff.TotalSeconds > 300) // 5 minutes
+                        if (timeDiff.TotalSeconds > CLEANUP_INTERVAL) 
                         {
                             keysToRemove.Add(entry.Key);
                         }
@@ -53,16 +53,12 @@ namespace WebServer
             {
                 (int requestCount, DateTime lastRequestTime) = value;
                 TimeSpan timeDiff = currentTime - lastRequestTime;
-                // Reset request count if more than a minute has passed since last request
                 if (timeDiff.TotalSeconds > 60)
                 {
                     requestCount = 0;
                 }
-                // Increment request count
                 requestCount++;
-                // Update request information
                 requestTracker[clientIp] = (requestCount, currentTime);
-                // Check if request count exceeds rate limit
                 if (requestCount > RATE_LIMIT)
                 {
                     context.Response.StatusCode = 429;
@@ -71,7 +67,6 @@ namespace WebServer
             }
             else
             {
-                // Add new entry for client
                 requestTracker.Add(clientIp, (1, currentTime));
             }
         }
