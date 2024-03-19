@@ -27,30 +27,48 @@ namespace WebServer
             if (ctx != null)
             {
                 var filepath = GetFilePath(ctx);
-
-                if (File.Exists(filepath))
+                byte[] responseBytes;
+                if (Cache.CacheEntries.TryGetValue(filepath, out CacheEntry? value) && !Cache.IsCacheEntryExpired(value))
                 {
-                    Logger.Log($"Serving requested resource - {filepath}");
-                    byte[] responseBytes = File.ReadAllBytes(filepath);
-                    var compressedBytes = CompressResponse(responseBytes, ctx);
+                    Logger.Log("File found in cache: " + filepath);
+
+                    Cache.CacheEntries[filepath].LastAccessTime = DateTime.Now;
+                    responseBytes = Cache.CacheEntries[filepath].Content;
+                    ctx.Response.AddHeader("Content-Encoding", "gzip");
                     Middleware.SetSecurityHeaders(ctx);
                     ctx.Response.StatusCode = (int)HttpStatusCode.OK;
                     ctx.Response.ContentType = DetermineContentType(filepath);
-                    ctx.Response.ContentLength64 = compressedBytes.Length;
-                    ctx.Response.OutputStream.Write(compressedBytes);
+                    ctx.Response.ContentLength64 = responseBytes.Length;
+                    ctx.Response.OutputStream.Write(responseBytes);
                 }
                 else
                 {
-                    Logger.Log($"Resource not found - {filepath}");
-                    var notFound = Path.Combine(Directory.GetCurrentDirectory(), "serverpages/notfound.html");
-                    byte[] responseBytes = File.ReadAllBytes(notFound);
-                    var compressedBytes = CompressResponse(responseBytes, ctx);
-                    ctx.Response.AddHeader("Content-Encoding", "gzip");
-                    Middleware.SetSecurityHeaders(ctx);
-                    ctx.Response.ContentType = "text/html";
-                    ctx.Response.ContentLength64 = compressedBytes.Length;
-                    ctx.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                    ctx.Response.OutputStream.Write(compressedBytes);
+
+                    if (File.Exists(filepath))
+                    {
+                        Logger.Log($"Serving requested resource - {filepath}");
+                        responseBytes = File.ReadAllBytes(filepath);
+                        var compressedBytes = CompressResponse(responseBytes, ctx);
+                        Cache.CacheFile(filepath, compressedBytes);
+                        Middleware.SetSecurityHeaders(ctx);
+                        ctx.Response.StatusCode = (int)HttpStatusCode.OK;
+                        ctx.Response.ContentType = DetermineContentType(filepath);
+                        ctx.Response.ContentLength64 = compressedBytes.Length;
+                        ctx.Response.OutputStream.Write(compressedBytes);
+                    }
+                    else
+                    {
+                        Logger.Log($"Resource not found - {filepath}");
+                        var notFound = Path.Combine(Directory.GetCurrentDirectory(), "serverpages/notfound.html");
+                        responseBytes = File.ReadAllBytes(notFound);
+                        var compressedBytes = CompressResponse(responseBytes, ctx);
+                        ctx.Response.AddHeader("Content-Encoding", "gzip");
+                        Middleware.SetSecurityHeaders(ctx);
+                        ctx.Response.ContentType = "text/html";
+                        ctx.Response.ContentLength64 = compressedBytes.Length;
+                        ctx.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                        ctx.Response.OutputStream.Write(compressedBytes);
+                    }
                 }
                 ctx.Response.Close();
             }

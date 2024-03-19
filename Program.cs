@@ -23,6 +23,7 @@ class Program
         var cancellationTokenSource = new CancellationTokenSource();
         CancellationToken cancellationToken = cancellationTokenSource.Token;
         Middleware.Init();
+        Cache.Init(ConfigManager.Configuration.MaxCacheEntries, ConfigManager.Configuration.CacheExpiration);
         // Handle incoming requests asynchronously
         await HandleRequestsAsync(listener, cancellationToken);
         // Clean up
@@ -47,7 +48,7 @@ class Program
                     if (!string.IsNullOrEmpty(selectedContentType) && context.Response.StatusCode == 200)
                     {
                         ResponseWriter.Write(context);
-                    } 
+                    }
                     else
                     {
                         context.Response.StatusCode = 406;

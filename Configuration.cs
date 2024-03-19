@@ -33,6 +33,12 @@ namespace WebServer
 
         [JsonPropertyName("cleanupInterval")]
         public int CleanupInterval { get; set; }
+
+        [JsonPropertyName("cacheExpiration")]
+        public int CacheExpiration { get; set; }
+         
+        [JsonPropertyName("maxCacheEntries")]
+        public int MaxCacheEntries { get; set; }
     }
 
     public class CORSConfig

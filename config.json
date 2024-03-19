@@ -8,7 +8,9 @@
     "logTimeThreshold":30,
     "logMaxFileSize":500000,
     "rateLimit":50,
-    "cleanupInterval":300,
+    "cleanupInterval": 300,
+    "cacheExpiration": 5,
+    "maxCacheEntries": 10,
     "cors":{
         "allowOptions":true,
         "allowOrigin":"*",
