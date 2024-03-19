@@ -6,12 +6,9 @@ class Program
 {
     /// <summary>
     /// TODO:
-    /// 1. Routing
-    /// 2. Request Validation
-    /// 3. Dynamix Content Generation
-    /// 4. Security
-    /// 5. Caching
-    /// 7. Content Type Negotiation
+    /// 1. Routing & Dynamic Content Generation
+    /// 2. Caching
+    /// 3. Content Type Negotiation
     /// </summary>
     /// <param name="args"></param>
     /// <returns></returns>

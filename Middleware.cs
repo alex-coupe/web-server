@@ -45,6 +45,13 @@ namespace WebServer
             }, cancellationTokenSource.Token);
         }
     
+        public static void SetSecurityHeaders(HttpListenerContext context)
+        {
+            context.Response.AddHeader("X-Content-Type-Options", "nosniff");
+            context.Response.AddHeader("X-Frame-Options", "DENY");
+            context.Response.AddHeader("X-XSS-Protection", "1; mode=block");
+            context.Response.AddHeader("Content-Security-Policy", "default-src 'self'");
+        }
         public static void HandleRateLimiting(HttpListenerContext context)
         {
             DateTime currentTime = DateTime.UtcNow;

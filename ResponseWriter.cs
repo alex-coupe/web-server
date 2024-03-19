@@ -33,6 +33,7 @@ namespace WebServer
                     Logger.Log($"Serving requested resource - {filepath}");
                     byte[] responseBytes = File.ReadAllBytes(filepath);
                     var compressedBytes = CompressResponse(responseBytes, ctx);
+                    Middleware.SetSecurityHeaders(ctx);
                     ctx.Response.StatusCode = (int)HttpStatusCode.OK;
                     ctx.Response.ContentType = DetermineContentType(filepath);
                     ctx.Response.ContentLength64 = compressedBytes.Length;
@@ -45,6 +46,7 @@ namespace WebServer
                     byte[] responseBytes = File.ReadAllBytes(notFound);
                     var compressedBytes = CompressResponse(responseBytes, ctx);
                     ctx.Response.AddHeader("Content-Encoding", "gzip");
+                    Middleware.SetSecurityHeaders(ctx);
                     ctx.Response.ContentType = "text/html";
                     ctx.Response.ContentLength64 = compressedBytes.Length;
                     ctx.Response.StatusCode = (int)HttpStatusCode.NotFound;
@@ -59,11 +61,12 @@ namespace WebServer
         private static string GetFilePath(HttpListenerContext context)
         {
             var filePath = Path.Combine(Directory.GetCurrentDirectory(), ConfigManager.Configuration.DocumentRoot + context.Request?.Url?.LocalPath);
-            if (filePath.EndsWith(ConfigManager.Configuration.DocumentRoot+"/"))
+            var normalizedPath = Path.GetFullPath(filePath);
+            if (normalizedPath.EndsWith($"{ConfigManager.Configuration.DocumentRoot}\\"))
             {
-                filePath = Path.Combine(Directory.GetCurrentDirectory(), ConfigManager.Configuration.DocumentRoot + "/index.html");
+                normalizedPath = Path.Combine(Directory.GetCurrentDirectory(), ConfigManager.Configuration.DocumentRoot + "/index.html");
             }
-            return filePath;
+            return normalizedPath;
         }
 
         private static string DetermineContentType(string filepath)
