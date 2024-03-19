@@ -4,16 +4,10 @@ using System.Text.Json.Serialization;
 using WebServer;
 class Program
 {
-    /// <summary>
     /// TODO:
     /// 1. Routing & Dynamic Content Generation
     /// 2. Caching
-    /// 3. Content Type Negotiation
-    /// </summary>
-    /// <param name="args"></param>
-    /// <returns></returns>
-    
-   
+     
     static async Task Main(string[] args)
     {
         ConfigManager.Init();
@@ -46,11 +40,18 @@ class Program
                 Logger.Log($"{context.Request.RemoteEndPoint.Address}:{context.Request.RemoteEndPoint.Port} - - [{DateTime.Now}]\"{context.Request.HttpMethod} {context.Request.Url} {context.Request.UserAgent}\"");
                 Middleware.HandleRateLimiting(context);
                 Middleware.HandleCors(context);
+                               
+                string selectedContentType = Middleware.GetBestContentMatch(Middleware.GetRequestedContentTypes(context), GetAcceptedType());
                 try
                 {
-                    if (context.Response.StatusCode == 200)
+                    if (!string.IsNullOrEmpty(selectedContentType) && context.Response.StatusCode == 200)
                     {
                         ResponseWriter.Write(context);
+                    } 
+                    else
+                    {
+                        context.Response.StatusCode = 406;
+                        context.Response.Close();
                     }
                 } 
                 catch(Exception ex)
@@ -64,5 +65,10 @@ class Program
         {
             Logger.Log($"Request context is null! {ane.Message} - {ane.InnerException}");
         }
+    }
+
+    private static string[] GetAcceptedType()
+    {
+        return ["*/*","text/html","text/css","text/javascript","application/javascript","application/json","text/plain"];
     }
 }

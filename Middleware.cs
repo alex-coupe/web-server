@@ -44,6 +44,26 @@ namespace WebServer
                 }
             }, cancellationTokenSource.Token);
         }
+
+        public static string[] GetRequestedContentTypes(HttpListenerContext context)
+        {
+            return context.Request.Headers.GetValues("Accept") ?? ["*/*"];
+        }
+
+        public static string GetBestContentMatch(string[] requestedContent, string[] availableContent)
+        {
+            foreach (string preference in requestedContent)
+            {
+                foreach (string capability in availableContent)
+                {
+                    if (preference.Contains(capability))
+                    {
+                        return capability;
+                    }
+                }
+            }
+            return "";
+        }
     
         public static void SetSecurityHeaders(HttpListenerContext context)
         {
